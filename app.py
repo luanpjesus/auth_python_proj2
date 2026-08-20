@@ -1,7 +1,9 @@
 # from dbm import sqlite3
 
+import json
+
 from flask import Flask, jsonify, request
-from flask_login import LoginManager
+from flask_login import LoginManager, current_user, login_user
 
 from database import db
 from models.user import User
@@ -24,15 +26,31 @@ login_manager.init_app(app)
 
 # view login
 
+login_manager.login_view = "login"  # type: ignore
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(user_id)
+
 
 @app.route("/login", methods=["POST"])
 def login():
     data = request.json
+    assert data is not None
     username = data.get("username")
     password = data.get("password")
 
     if username and password:
-        pass
+        # Login
+
+        user = User.query.filter_by(username=username).first()
+
+        if user and user.password == password:
+            login_user(user)
+            print(current_user.is_authenticated)
+            return jsonify({"message": "Autenticacao realizada com sucesso"})
+        return jsonify({"message": "Autenticacao realizada com sucesso"})
 
     return jsonify({"message": "credenciais invalidas"}), 400
 

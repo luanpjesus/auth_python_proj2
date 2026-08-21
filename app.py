@@ -1,9 +1,14 @@
 # from dbm import sqlite3
 
-import json
 
 from flask import Flask, jsonify, request
-from flask_login import LoginManager, current_user, login_user
+from flask_login import (
+    LoginManager,
+    current_user,
+    login_required,
+    login_user,
+    logout_user,
+)
 
 from database import db
 from models.user import User
@@ -53,6 +58,29 @@ def login():
         return jsonify({"message": "Autenticacao realizada com sucesso"})
 
     return jsonify({"message": "credenciais invalidas"}), 400
+
+
+@app.route("/logout", methods=["GET"])
+@login_required
+def logout():
+    logout_user()
+    return jsonify({"mesage": "Logout realizado com sucesso!"})
+
+
+@app.route("/user", methods=["POST"])
+def create_user():
+    data = request.json
+
+    assert data is not None
+    username = data.get("username")
+    password = data.get("password")
+
+    if username and password:
+        user = User(username=username, password=password)
+        db.session.add(user)
+        db.session.commit()
+        return jsonify({"message": "usuario cadastrado com sucesso"})
+    return jsonify({"message": "Dados invalidos"}), 401
 
 
 @app.route("/hello-world", methods=["GET"])

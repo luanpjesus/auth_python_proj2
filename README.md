@@ -1,3 +1,11 @@
+
+
+# Rodar o requirements
+
+```
+pip3 install -r requirements.txt
+```
+
 # Auth API para Postman
 
 API simples em Python puro para testar autenticação e CRUD de usuário no Postman.

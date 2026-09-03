@@ -1,6 +1,5 @@
 # from dbm import sqlite3
 
-
 from flask import Flask, jsonify, request
 from flask_login import (
     LoginManager,
@@ -78,7 +77,7 @@ def create_user():
     password = data.get("password")
 
     if username and password:
-        user = User(username=username, password=password)
+        user = User(username=username, password=password, role="user")
         db.session.add(user)
         db.session.commit()
         return jsonify({"message": "usuario cadastrado com sucesso"})
@@ -100,6 +99,9 @@ def read_user(id_user):
 def update_user(id_user):
     data = request.json
     user = User.query.get(id_user)
+
+    if id_user != current_user.id and current_user.role == "user":
+        return jsonify({"message": "O Usuario nao tem permissao"}), 403
 
     if not data:
         return jsonify({"message": "JSON nao enviado"}), 400
@@ -126,6 +128,8 @@ def update_user(id_user):
 def delete_user(id_user):
     user = User.query.get(id_user)
 
+    if current_user.role != "admin":
+        return jsonify({"message": "Operacao nao permitida"})
     if id_user == current_user.id:
         return jsonify({"message": "Delecao nao permitida"}), 403
 
